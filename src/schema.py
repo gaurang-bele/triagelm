@@ -4,7 +4,7 @@ import json
 import re
 from enum import Enum
 from typing import Any, Dict, Optional, Tuple
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 
 class SentimentEnum(str, Enum):
@@ -49,8 +49,7 @@ class ExtractedEntities(BaseModel):
         default=None, description="Reference number or transaction ID if provided"
     )
 
-    class Config:
-        extra = "ignore"
+    model_config = ConfigDict(extra="ignore")
 
 
 class TriageOutput(BaseModel):
@@ -76,9 +75,7 @@ class TriageOutput(BaseModel):
         description="Structured entities extracted directly from message",
     )
 
-    class Config:
-        extra = "ignore"
-        use_enum_values = True
+    model_config = ConfigDict(extra="ignore", use_enum_values=True)
 
 
 def extract_json_block(text: str) -> str:
