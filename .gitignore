@@ -1,0 +1,31 @@
+# Python & Virtual Environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# Checkpoints & Weights
+checkpoints/
+models/
+exports/
+*.pt
+*.bin
+*.safetensors
+*.gguf
+
+# Logs & Tracking
+wandb/
+runs/
+*.log
+
+# Environment & Secrets
+.env
+.env.local
+
+# OS Files
+.DS_Store
+Thumbs.db

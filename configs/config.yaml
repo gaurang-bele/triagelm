@@ -1,0 +1,81 @@
+# TriageLM Master Configuration
+
+models:
+  primary:
+    name: "Qwen/Qwen2.5-1.5B-Instruct"
+    description: "Primary model optimized for multi-task extraction and Hinglish generalization"
+    micro_batch_size: 1
+    gradient_accumulation_steps: 8
+  ablation:
+    name: "Qwen/Qwen2.5-0.5B-Instruct"
+    description: "Efficiency baseline for latency, memory, and accuracy comparison"
+    micro_batch_size: 2
+    gradient_accumulation_steps: 4
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  train_file: "data/processed/train.jsonl"
+  val_file: "data/processed/val.jsonl"
+  test_in_domain_file: "data/processed/test_in_domain.jsonl"
+  test_ood_hinglish_file: "data/processed/test_ood_hinglish.jsonl"
+  train_split_ratio: 0.80
+  val_split_ratio: 0.10
+  test_split_ratio: 0.10
+  random_seed: 42
+
+quantization:
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: "float16"
+
+peft_lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  bias: "none"
+  task_type: "CAUSAL_LM"
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+
+training:
+  learning_rate: 2.0e-4
+  num_train_epochs: 3
+  max_seq_length: 512
+  weight_decay: 0.01
+  warmup_ratio: 0.05
+  lr_scheduler_type: "cosine"
+  gradient_checkpointing: true
+  optim: "paged_adamw_8bit"
+  logging_steps: 10
+  save_total_limit: 2
+  output_dir: "checkpoints"
+  report_to: "none" # Set to "wandb" or "tensorboard" as needed
+
+prompt:
+  system_prompt: |
+    You are an expert AI customer support triage engine for a financial services platform.
+    Analyze the user's message and return a strictly formatted JSON object adhering exactly to the following schema:
+    {
+      "intent": "<standardized_intent_slug>",
+      "sentiment": "positive" | "neutral" | "frustrated" | "angry",
+      "urgency": "low" | "medium" | "high" | "critical",
+      "route_to": "card_security" | "payments_ops" | "dispute_management" | "account_services" | "general_support",
+      "action_required": true | false,
+      "entities": {
+        "amount": string or null,
+        "currency": string or null,
+        "card_type": string or null,
+        "merchant": string or null,
+        "date": string or null,
+        "transaction_id": string or null
+      }
+    }
+    Output ONLY valid JSON. Do not include markdown code fences, greetings, or conversational filler.
